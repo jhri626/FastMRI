@@ -1,0 +1,3 @@
+[submodule "MRAugment_for_FastMRI"]
+	path = MRAugment_for_FastMRI
+	url = https://github.com/smtamh/MRAugment_for_FastMRI.git
