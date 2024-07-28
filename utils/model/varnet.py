@@ -73,7 +73,7 @@ class NormUnet(nn.Module):
 
         x = x.view(b, c, h, w)
 
-        return (x - mean) / (std**2+1e16).sqrt(), mean, std
+        return (x - mean) / (std**2+1e-16).sqrt(), mean, std
 
     def unnorm(
         self, x: torch.Tensor, mean: torch.Tensor, std: torch.Tensor
@@ -240,7 +240,7 @@ class VarNet(nn.Module):
 
         for cascade in self.cascades:
             kspace_pred = cascade(kspace_pred, masked_kspace, mask, sens_maps)
-        result = fastmri.rss(fastmri.complex_abs(fastmri.ifft2c(kspace_pred)+1e16), dim=1)
+        result = fastmri.rss(fastmri.complex_abs(fastmri.ifft2c(kspace_pred)), dim=1)
         height = result.shape[-2]
         width = result.shape[-1]
         return result[..., (height - 384) // 2 : 384 + (height - 384) // 2, (width - 384) // 2 : 384 + (width - 384) // 2]

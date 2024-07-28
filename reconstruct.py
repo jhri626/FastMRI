@@ -6,6 +6,7 @@ if os.getcwd() + '/utils/model/' not in sys.path:
 
 from utils.learning.test_part import forward
 import time
+from MRAugment.mraugment.data_augment import DataAugmentor
     
 def parse():
     parser = argparse.ArgumentParser(description='Test Varnet on FastMRI challenge Images',
@@ -19,6 +20,8 @@ def parse():
     parser.add_argument('--chans', type=int, default=9, help='Number of channels for cascade U-Net')
     parser.add_argument('--sens_chans', type=int, default=4, help='Number of channels for sensitivity map U-Net')
     parser.add_argument("--input_key", type=str, default='kspace', help='Name of input key')
+    
+    parser = DataAugmentor.add_augmentation_specific_args(parser)
 
     args = parser.parse_args()
     return args
@@ -27,6 +30,10 @@ def parse():
 if __name__ == '__main__':
     args = parse()
     args.exp_dir = '../result' / args.net_name / 'checkpoints'
+    
+    current_epoch = [0]  # Mutable object to store current epoch
+    def current_epoch_fn(): # lambda 에러 수정 위해 추가
+        return current_epoch[0]
     
     public_acc, private_acc = None, None
 

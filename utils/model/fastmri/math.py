@@ -66,7 +66,7 @@ def complex_abs(data: torch.Tensor) -> torch.Tensor:
     if not data.shape[-1] == 2:
         raise ValueError("Tensor does not have separate complex dim.")
 
-    return (data ** 2).sum(dim=-1).sqrt()
+    return (data ** 2+1e-16).sum(dim=-1).sqrt()
 
 
 def complex_abs_sq(data: torch.Tensor) -> torch.Tensor:

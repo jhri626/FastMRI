@@ -16,11 +16,15 @@ from utils.model.varnet import VarNet
 
 import os
 
-def train_epoch(args, epoch, model, data_loader, optimizer, loss_type, mini_batch=2):
+def train_epoch(args, epoch, model, data_loader, optimizer, loss_type,augmentor, mini_batch_size=4):
     model.train()
     start_epoch = start_iter = time.perf_counter()
     len_loader = len(data_loader)
     total_loss = 0.
+    
+    accumulated_loss = 0.0
+    batch_count = 0
+    optimizer.zero_grad()
 
     
     for iter, data in enumerate(data_loader):
@@ -150,7 +154,7 @@ def download_model(url, fname):
 
 
         
-def train(args):
+def train(args,augmentor):
     device = torch.device(f'cuda:{args.GPU_NUM}' if torch.cuda.is_available() else 'cpu')
     torch.cuda.set_device(device)
     print('Current cuda device: ', torch.cuda.current_device())
@@ -182,6 +186,8 @@ def train(args):
     best_val_loss = 1.
     start_epoch = 0
 
+    current_epoch = [start_epoch]  # Mutable object to store current epoch
+    augmentor.current_epoch_fn = lambda: current_epoch[0]
     
     train_loader = create_data_loaders(data_path = args.data_path_train, args = args, shuffle=True, augmentor=augmentor)
     val_loader = create_data_loaders(data_path = args.data_path_val, args = args, augmentor=None)
@@ -193,7 +199,8 @@ def train(args):
         print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
         
         #0711, 0727 추가 (Data Augmentation in Training)
-        augmentor.update_epoch(epoch)  # 에포크 업데이트
+        #augmentor.update_epoch(epoch)  # 에포크 업데이트
+        current_epoch[0] = epoch
         
         train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type, augmentor)
         val_loss, num_subjects, reconstructions, targets, inputs, val_time = validate(args, model, val_loader)
