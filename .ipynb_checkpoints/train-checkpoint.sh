@@ -11,4 +11,4 @@ python train.py \
   --aug_schedule exp \
   --aug_delay 10 \
   --aug_strength 0.5 \
-  --aug_exp_decay 3.0 \
+  --aug_exp_decay 3.0
