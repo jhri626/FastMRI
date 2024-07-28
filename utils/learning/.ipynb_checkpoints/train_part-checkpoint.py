@@ -16,7 +16,7 @@ from utils.model.varnet import VarNet
 
 import os
 
-def train_epoch(args, epoch, model, data_loader, optimizer, loss_type,augmentor, mini_batch_size=4):
+def train_epoch(args, epoch, model, data_loader, optimizer, loss_type,augmentor, mini_batch_size=2):
     model.train()
     start_epoch = start_iter = time.perf_counter()
     len_loader = len(data_loader)
