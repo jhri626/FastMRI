@@ -396,13 +396,13 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_max_translation-x', 
             type=float,
-            default=0.125, 
+            default=0.065, #0730 값 조정 
             help='Maximum translation applied along the x axis as fraction of image width'
         )
         parser.add_argument(
             '--aug_max_translation-y',
             type=float, 
-            default=0.125, 
+            default=0.065,  #0730 값 조정 
             help='Maximum translation applied along the y axis as fraction of image height'
         )
         parser.add_argument(
