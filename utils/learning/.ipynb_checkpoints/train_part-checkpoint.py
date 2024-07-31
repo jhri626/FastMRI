@@ -11,7 +11,7 @@ import copy
 from collections import defaultdict
 from utils.data.load_data import create_data_loaders
 from utils.common.utils import save_reconstructions, ssim_loss
-from utils.common.loss_function import SSIMLoss
+from utils.common.loss_function import SSIMLoss, MSSSIML1Loss
 from utils.model.varnet import VarNet
 
 import os
@@ -180,7 +180,7 @@ def train(args,augmentor):
     model.load_state_dict(pretrained)
     """
 
-    loss_type = SSIMLoss().to(device=device)
+    loss_type = MSSSIML1Loss().to(device=device) # loss function 수정
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
 
     best_val_loss = 1.

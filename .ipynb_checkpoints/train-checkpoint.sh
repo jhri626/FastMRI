@@ -1,6 +1,6 @@
 python train.py \
   -b 1 \
-  -e 20 \
+  -e 1 \
   -l 0.001 \
   -r 500 \
   -n 'test_Varnet' \
