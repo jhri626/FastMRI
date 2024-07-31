@@ -89,7 +89,7 @@ class MSSSIML1Loss(nn.Module):
     def _calculate_ssim(self, X, Y, C1, C2, win_size):
         #print(f"Current w: {w}")
         w = getattr(self, f"w_{win_size}")
-        print('\n w:',w)
+        #print('\n w:',w)
         ux = F.conv2d(X, w, padding=win_size//2)
         uy = F.conv2d(Y, w, padding=win_size//2)
         uxx = F.conv2d(X * X, w, padding=win_size//2)
@@ -106,7 +106,7 @@ class MSSSIML1Loss(nn.Module):
         )
         D = B1 * B2
         S = (A1 * A2) / D
-        print("loss :",S.mean, "\nw :",w)
+        #print("loss :",S.mean, "\nw :",w)
         return S.mean()
 
     def _calculate_msssim(self, X, Y, data_range):
