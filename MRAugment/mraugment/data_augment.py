@@ -45,15 +45,18 @@ class AugmentationPipeline:
         # Horizontal flip
         if self.random_apply('fliph'):
             im = TF.hflip(im)
+            #print("fliph")
 
         # Vertical flip 
         if self.random_apply('flipv'):
             im = TF.vflip(im)
+            #print("flipv")
 
         # Rotation by multiples of 90 deg 
         if self.random_apply('rot90'):
             k = self.rng.randint(1, 4)  
             im = torch.rot90(im, k, dims=[-2, -1])
+            #print("rot90")
 
         # Translation by integer number of pixels
         if self.random_apply('translation'):
@@ -66,6 +69,7 @@ class AugmentationPipeline:
             pad, top, left = self._get_translate_padding_and_crop(im, (t_x, t_y))
             im = TF.pad(im, padding=pad, padding_mode='reflect')
             im = TF.crop(im, top, left, h, w)
+            #print("translation")
 
         # ------------------------       
         # interpolating transforms
@@ -76,6 +80,7 @@ class AugmentationPipeline:
         if self.random_apply('rotation'):
             interp = True
             rot = self.rng.uniform(-self.hparams.aug_max_rotation, self.hparams.aug_max_rotation)
+            #print("rotation")
         else:
             rot = 0.
 
@@ -84,6 +89,7 @@ class AugmentationPipeline:
             interp = True
             shear_x = self.rng.uniform(-self.hparams.aug_max_shearing_x, self.hparams.aug_max_shearing_x)
             shear_y = self.rng.uniform(-self.hparams.aug_max_shearing_y, self.hparams.aug_max_shearing_y)
+            #print("shearing")
         else:
             shear_x, shear_y = 0., 0.
 
@@ -91,6 +97,7 @@ class AugmentationPipeline:
         if self.random_apply('scaling'):
             interp = True
             scale = self.rng.uniform(1-self.hparams.aug_max_scaling, 1 + self.hparams.aug_max_scaling)
+            #print("scaling")
         else:
             scale = 1.
 
@@ -134,7 +141,8 @@ class AugmentationPipeline:
         
         return im
     
-    def augment_from_kspace(self, kspace, target_size, max_train_size=None):       
+    def augment_from_kspace(self, kspace, target_size, max_train_size=None): 
+
         im = ifft2c(kspace) 
         im = self.augment_image(im, max_output_size=max_train_size)
         target = self.im_to_target(im, target_size)
@@ -236,7 +244,7 @@ class DataAugmentor:
         """
         Generates augmented kspace and corresponding augmented target pair.
         kspace: torch tensor of shape [C, H, W, 2] (multi-coil) or [H, W, 2]
-            where last dim is for real/imaginary channels
+            where last dim is for real/imaginary channelsg
         target_size: [H, W] shape of the generated augmented target
         """
         # Set augmentation probability

@@ -1,14 +1,14 @@
 python train.py \
   -b 1 \
-  -e 1 \
+  -e 20 \
   -l 0.001 \
   -r 500 \
   -n 'test_Varnet' \
   -t '/home/Data/train/' \
   -v '/home/Data/val/' \
-  --cascade 1 \
+  --cascade 12 \
   --aug_on \
   --aug_schedule exp \
-  --aug_delay 0 \
+  --aug_delay -1 \
   --aug_strength 0.5 \
   --aug_exp_decay 3.0 \

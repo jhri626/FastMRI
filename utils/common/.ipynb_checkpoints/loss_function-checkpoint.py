@@ -56,6 +56,7 @@ class SSIMLoss(nn.Module):
 '''
 MSSSIML1Loss 구현 by gpt
 sigma level만 수정하면 됨
+'''
 
 import torch
 import torch.nn as nn
@@ -88,6 +89,7 @@ class MSSSIML1Loss(nn.Module):
             self.register_buffer(f"w_{int(sigma)}", torch.ones(1, 1, int(sigma), int(sigma)) / sigma ** 2)
 
     def _calculate_ssim(self, X, Y, C1, C2):
+        print(f"Current self.w: {self.w}")
         ux = F.conv2d(X, self.w)
         uy = F.conv2d(Y, self.w)
         uxx = F.conv2d(X * X, self.w)
@@ -113,6 +115,11 @@ class MSSSIML1Loss(nn.Module):
         for sigma in self.sigma_levels:
             w = getattr(self, f"w_{int(sigma)}")
             ssim = self._calculate_ssim(X, Y, C1, C2)
+            
+            # 디버깅을 위해 sigma 값과 w를 출력
+            print(f"Current sigma: {sigma}")
+            print(f"Current w: {w}")
+            
             msssim *= ssim
         return msssim.mean()
 
@@ -133,4 +140,3 @@ class MSSSIML1Loss(nn.Module):
         loss = self.alpha * msssim_loss + (1 - self.alpha) * l1_loss
 
         return loss
-'''
