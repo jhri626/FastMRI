@@ -16,7 +16,7 @@ from utils.model.varnet import VarNet
 
 import os
 
-def train_epoch(args, epoch, model, data_loader, optimizer, loss_type,augmentor, mini_batch_size=2):
+def train_epoch(args, epoch, model, data_loader, optimizer, loss_type, augmentor, mini_batch_size=2):
     model.train()
     start_epoch = start_iter = time.perf_counter()
     len_loader = len(data_loader)
@@ -42,22 +42,21 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type,augmentor,
         batch_count += 1
         # 0709 mini batch test
         
-        if batch_count == mini_batch_size or iter==0:
+        if batch_count == mini_batch_size:
             optimizer.step()  # 그라디언트 업데이트
             optimizer.zero_grad()  # 그라디언트 초기화
             total_loss += accumulated_loss
-            
-            if iter % args.report_interval == 0:
-                print(
-                    f'Epoch = [{epoch:3d}/{args.num_epochs:3d}] '
-                    f'Iter = [{iter:4d}/{len(data_loader):4d}] '
-                    f'Loss = {loss.item()*mini_batch_size:.4g} '
-                    f'Time = {time.perf_counter() - start_iter:.4f}s',
-                )
-                start_iter = time.perf_counter()
-
             accumulated_loss = 0.0
             batch_count = 0
+            
+        if iter % args.report_interval == 0:
+            print(
+                f'Epoch = [{epoch:3d}/{args.num_epochs:3d}] '
+                f'Iter = [{iter:4d}/{len(data_loader):4d}] '
+                f'Loss = {loss.item()*mini_batch_size:.4g} '
+                f'Time = {time.perf_counter() - start_iter:.4f}s',
+            )
+            start_iter = time.perf_counter()
             
     if batch_count > 0:  # 남아있는 미니 배치 처리
         optimizer.step()  # 그라디언트 업데이트
@@ -185,6 +184,12 @@ def train(args,augmentor):
 
     best_val_loss = 1.
     start_epoch = 0
+    
+    '''
+    다음에 시도해 볼것
+    gradient_accumulation = 2  # 초기 gradient_accumulation 설정 
+    '''
+    
 
     current_epoch = [start_epoch]  # Mutable object to store current epoch
     augmentor.current_epoch_fn = lambda: current_epoch[0]
@@ -232,3 +237,9 @@ def train(args,augmentor):
             print(
                 f'ForwardTime = {time.perf_counter() - start:.4f}s',
             )
+        '''
+        gradient_accumulation
+        if (epoch + 1) % 4 == 0:
+            mini_batch_size += 1
+            
+        '''
