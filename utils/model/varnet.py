@@ -13,6 +13,8 @@ import torch
 import torch.nn as nn
 import torch.nn.functional as F
 from fastmri.data import transforms
+from torch.utils.checkpoint import checkpoint
+
 
 from unet import Unet
 
@@ -191,13 +193,19 @@ class SensitivityModel(nn.Module):
         # convert to image space
         x = fastmri.ifft2c(x)
         x, b = self.chans_to_batch_dim(x)
+        
+        def custom_forward_sensitivity(x):
+            x = self.norm_unet(x)
+            return x
 
+        x = checkpoint(custom_forward_sensitivity, x) # checkpoint 0804
+        
         # estimate sensitivities
-        x = self.norm_unet(x)
         x = self.batch_chans_to_chan_dim(x, b)
         x = self.divide_root_sum_of_squares(x)
 
         return x
+
 
 
 class VarNet(nn.Module):
@@ -284,8 +292,17 @@ class VarNetBlock(nn.Module):
     ) -> torch.Tensor:
         zero = torch.zeros(1, 1, 1, 1, 1).to(current_kspace)
         soft_dc = torch.where(mask, current_kspace - ref_kspace, zero) * self.dc_weight
+        '''
         model_term = self.sens_expand(
             self.model(self.sens_reduce(current_kspace, sens_maps)), sens_maps
         )
+        '''
+        def custom_forward(*inputs):
+            current_kspace, sens_maps = inputs
+            return self.sens_expand(
+                self.model(self.sens_reduce(current_kspace, sens_maps)), sens_maps
+            )
+
+        model_term = checkpoint(custom_forward, current_kspace, sens_maps) # gradient checkpoint 0804
 
         return current_kspace - soft_dc - model_term

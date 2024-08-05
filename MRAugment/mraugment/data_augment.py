@@ -358,25 +358,25 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_weight_translation', 
             type=float, 
-            default=1.0, 
+            default=0.2, #0804 값 조정 
             help='Weight of translation probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
             '--aug_weight_rotation', 
             type=float, 
-            default=1.0, 
+            default=0.2, #0804 값 조정 
             help='Weight of arbitrary rotation probability. Augmentation probability will be multiplied by this constant'
         )  
         parser.add_argument(
             '--aug_weight_shearing', 
             type=float,
-            default=1.0, 
+            default=0.2, 
             help='Weight of shearing probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
             '--aug_weight_scaling', 
             type=float, 
-            default=1.0, 
+            default=0.2, #0804 값 조정 
             help='Weight of scaling probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
@@ -388,13 +388,13 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_weight_fliph', 
             type=float,
-            default=1.0, 
+            default=0.2, #0804 값 조정 
             help='Weight of horizontal flip probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
             '--aug_weight_flipv',
             type=float,
-            default=1.0, 
+            default=0.2, #0804 값 조정 
             help='Weight of vertical flip probability. Augmentation probability will be multiplied by this constant'
         ) 
 
@@ -404,13 +404,13 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_max_translation-x', 
             type=float,
-            default=0.065, #0730 값 조정 
+            default=0.03, #0804 값 조정 
             help='Maximum translation applied along the x axis as fraction of image width'
         )
         parser.add_argument(
             '--aug_max_translation-y',
             type=float, 
-            default=0.065,  #0730 값 조정 
+            default=0.06,  #0730 값 조정 
             help='Maximum translation applied along the y axis as fraction of image height'
         )
         parser.add_argument(
@@ -422,13 +422,13 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_max_shearing-x', 
             type=float, 
-            default=15.0, 
+            default=10.0, 
             help='Maximum shearing applied in either positive or negative direction in degrees along x axis.'
         )
         parser.add_argument(
             '--aug_max_shearing-y', 
             type=float, 
-            default=15.0, 
+            default=10.0, 
             help='Maximum shearing applied in either positive or negative direction in degrees along y axis.'
         )
         parser.add_argument(

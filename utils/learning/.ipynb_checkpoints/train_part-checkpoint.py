@@ -16,7 +16,7 @@ from utils.model.varnet import VarNet
 
 import os
 
-def train_epoch(args, epoch, model, data_loader, optimizer, loss_type, augmentor, mini_batch_size=2):
+def train_epoch(args, epoch, model, data_loader, optimizer, loss_type, augmentor, gradient_accumulation=2):
     model.train()
     start_epoch = start_iter = time.perf_counter()
     len_loader = len(data_loader)
@@ -36,13 +36,13 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type, augmentor
         
         output = model(kspace, mask)
         loss = loss_type(output, target, maximum)
-        loss = loss / mini_batch_size  # 손실을 미니 배치 크기로 나누기
+        loss = loss / gradient_accumulation  # 손실을 미니 배치 크기로 나누기
         loss.backward()  # 그라디언트 누적
-        accumulated_loss += loss.item()*mini_batch_size
+        accumulated_loss += loss.item()*gradient_accumulation
         batch_count += 1
         # 0709 mini batch test
         
-        if batch_count == mini_batch_size:
+        if batch_count == gradient_accumulation:
             optimizer.step()  # 그라디언트 업데이트
             optimizer.zero_grad()  # 그라디언트 초기화
             total_loss += accumulated_loss
@@ -53,7 +53,7 @@ def train_epoch(args, epoch, model, data_loader, optimizer, loss_type, augmentor
             print(
                 f'Epoch = [{epoch:3d}/{args.num_epochs:3d}] '
                 f'Iter = [{iter:4d}/{len(data_loader):4d}] '
-                f'Loss = {loss.item()*mini_batch_size:.4g} '
+                f'Loss = {loss.item()*gradient_accumulation:.4g} '
                 f'Time = {time.perf_counter() - start_iter:.4f}s',
             )
             start_iter = time.perf_counter()
@@ -181,14 +181,15 @@ def train(args,augmentor):
 
     loss_type = MSSSIML1Loss().to(device=device) # loss function 수정
     optimizer = torch.optim.Adam(model.parameters(), args.lr)
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10,15], gamma=0.5) #0804 scheduler 추가 (training 시작 후)
 
     best_val_loss = 1.
     start_epoch = 0
     
-    '''
-    다음에 시도해 볼것
+    
+   # 다음에 시도해 볼것
     gradient_accumulation = 2  # 초기 gradient_accumulation 설정 
-    '''
+    
     
 
     current_epoch = [start_epoch]  # Mutable object to store current epoch
@@ -201,13 +202,13 @@ def train(args,augmentor):
     
     val_loss_log = np.empty((0, 2))
     for epoch in range(start_epoch, args.num_epochs):
-        print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
+        print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............LR: {scheduler.get_last_lr()}')
         
         #0711, 0727 추가 (Data Augmentation in Training)
         #augmentor.update_epoch(epoch)  # 에포크 업데이트
         current_epoch[0] = epoch
         
-        train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type, augmentor)
+        train_loss, train_time = train_epoch(args, epoch, model, train_loader, optimizer, loss_type, augmentor, gradient_accumulation)
         val_loss, num_subjects, reconstructions, targets, inputs, val_time = validate(args, model, val_loader)
         
         val_loss_log = np.append(val_loss_log, np.array([[epoch, val_loss]]), axis=0)
@@ -237,9 +238,9 @@ def train(args,augmentor):
             print(
                 f'ForwardTime = {time.perf_counter() - start:.4f}s',
             )
-        '''
-        gradient_accumulation
+        
+        # gradient_accumulation
         if (epoch + 1) % 4 == 0:
-            mini_batch_size += 1
+            gradient_accumulation += 1
             
-        '''
+        

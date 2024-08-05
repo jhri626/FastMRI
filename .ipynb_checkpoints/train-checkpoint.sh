@@ -1,12 +1,14 @@
 python train.py \
   -b 1 \
-  -e 20 \
+  -e 1 \
   -l 0.001 \
   -r 500 \
   -n 'test_Varnet' \
   -t '/home/Data/train/' \
   -v '/home/Data/val/' \
-  --cascade 12 \
+  --cascade 40 \
+  --chans 18 \
+  --sens_chans 8 \
   --aug_on \
   --aug_schedule exp \
   --aug_delay 10 \
