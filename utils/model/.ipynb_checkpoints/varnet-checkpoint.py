@@ -197,8 +197,10 @@ class SensitivityModel(nn.Module):
         def custom_forward_sensitivity(x):
             x = self.norm_unet(x)
             return x
-
-        x = checkpoint(custom_forward_sensitivity, x) # checkpoint 0804
+        
+        x.requires_grad_(True)  # requires_grad를 설정
+        #print(f'x requires_grad: {x.requires_grad}')
+        x = checkpoint(custom_forward_sensitivity, x, use_reentrant=False) # checkpoint 0804
         
         # estimate sensitivities
         x = self.batch_chans_to_chan_dim(x, b)

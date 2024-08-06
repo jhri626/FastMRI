@@ -71,27 +71,22 @@ class Unet(nn.Module):
         Returns:
             Output tensor of shape `(N, out_chans, H, W)`.
         """
-        assert not torch.isnan(image).any(), "NaN in input image"
+
         stack = []
         output = image
 
         # apply down-sampling layers
         for layer in self.down_sample_layers:
             output = layer(output)
-            assert not torch.isnan(output).any(), "NaN after down_sample layer"
             stack.append(output)
             output = F.avg_pool2d(output, kernel_size=2, stride=2, padding=0)
-            assert not torch.isnan(output).any(), "NaN after avg_pool2d"
-
 
         output = self.conv(output)
-        assert not torch.isnan(output).any(), "NaN after conv"
 
         # apply up-sampling layers
         for transpose_conv, conv in zip(self.up_transpose_conv, self.up_conv):
             downsample_layer = stack.pop()
             output = transpose_conv(output)
-            assert not torch.isnan(output).any(), "NaN after transpose_conv"
 
             # reflect pad on the right/botton if needed to handle odd input dimensions
             padding = [0, 0, 0, 0]
@@ -101,13 +96,9 @@ class Unet(nn.Module):
                 padding[3] = 1  # padding bottom
             if torch.sum(torch.tensor(padding)) != 0:
                 output = F.pad(output, padding, "reflect")
-                assert not torch.isnan(output).any(), "NaN after F.pad"
-
 
             output = torch.cat([output, downsample_layer], dim=1)
-            assert not torch.isnan(output).any(), "NaN after torch.cat"
             output = conv(output)
-            assert not torch.isnan(output).any(), "NaN after up_conv"
         
         return output
 
@@ -148,18 +139,6 @@ class ConvBlock(nn.Module):
             nn.LeakyReLU(negative_slope=0.2, inplace=True),
             nn.Dropout2d(drop_prob),
         )
-        #self._initialize_weights()
-
-    def _initialize_weights(self):
-        for layer in self.layers:
-            if isinstance(layer, nn.Conv2d):
-                nn.init.kaiming_normal_(layer.weight, mode='fan_out', nonlinearity='leaky_relu')
-            elif isinstance(layer, nn.InstanceNorm2d):
-                if layer.weight is not None:
-                    nn.init.constant_(layer.weight, 1)
-                if layer.bias is not None:
-                    nn.init.constant_(layer.bias, 0)
-        
 
     def forward(self, image: torch.Tensor) -> torch.Tensor:
         """
@@ -168,49 +147,7 @@ class ConvBlock(nn.Module):
         Returns:
             Output tensor of shape `(N, out_chans, H, W)`.
         """
-        #return self.layers(image)
-        #self.check_for_nan_in_parameters()
-        
-        assert not torch.isnan(image).any(), "NaN in input data of ConvBlock"
-
-        print(f"ConvBlock weights after second Conv2d: {self.layers[0].weight.data}")
-        output = self.layers[0](image)
-        #assert not torch.isnan(output).any(), "NaN after first Conv2d"
-
-        output = self.layers[1](output)
-        assert not torch.isnan(output).any(), "NaN after first InstanceNorm2d"
-
-        output = self.layers[2](output)
-        assert not torch.isnan(output).any(), "NaN after first LeakyReLU"
-
-        output = self.layers[3](output)
-        assert not torch.isnan(output).any(), "NaN after first Dropout2d"
-
-        output = self.layers[4](output)
-        assert not torch.isnan(output).any(), "NaN after second Conv2d"
-
-        output = self.layers[5](output)
-        assert not torch.isnan(output).any(), "NaN after second InstanceNorm2d"
-
-        output = self.layers[6](output)
-        assert not torch.isnan(output).any(), "NaN after second LeakyReLU"
-
-        output = self.layers[7](output)
-        assert not torch.isnan(output).any(), "NaN after second Dropout2d"
-
-        return output
-        #output=self.layers(image)
-        #assert not torch.isnan(output).any(), "NaN in ConvBlock"
-        #return output
-        
-    def check_for_nan_in_parameters(self):
-        """
-        ConvBlock의 모든 파라미터에서 NaN 값을 검사합니다.
-        NaN이 발견되면 AssertionError를 발생시킵니다.
-        """
-        for name, param in self.named_parameters():
-            if torch.isnan(param).any():
-                raise AssertionError(f"NaN detected in parameter: {name}")
+        return self.layers(image)
 
 
 class TransposeConvBlock(nn.Module):
@@ -245,7 +182,4 @@ class TransposeConvBlock(nn.Module):
         Returns:
             Output tensor of shape `(N, out_chans, H*2, W*2)`.
         """
-        #return self.layers(image)
-        output = self.layers(image)
-        assert not torch.isnan(output).any(), "NaN in TransposeConvBlock"
-        return output
+        return self.layers(image)

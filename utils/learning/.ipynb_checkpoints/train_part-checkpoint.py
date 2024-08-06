@@ -151,7 +151,16 @@ def download_model(url, fname):
             progress_bar.update(len(chunk))
             fh.write(chunk)
 
-
+# 0806 Kaiming initialization
+def kaiming_init(module):
+    if isinstance(module, (nn.Conv2d, nn.ConvTranspose2d)):
+        nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='leaky_relu')
+        if module.bias is not None:
+            nn.init.constant_(module.bias, 0)
+    elif isinstance(module, nn.Linear):
+        nn.init.kaiming_normal_(module.weight, mode='fan_out', nonlinearity='leaky_relu')
+        if module.bias is not None:
+            nn.init.constant_(module.bias, 0)
         
 def train(args,augmentor):
     device = torch.device(f'cuda:{args.GPU_NUM}' if torch.cuda.is_available() else 'cpu')
@@ -161,6 +170,7 @@ def train(args,augmentor):
     model = VarNet(num_cascades=args.cascade, 
                    chans=args.chans, 
                    sens_chans=args.sens_chans)
+    model.apply(kaiming_init)
     model.to(device=device)
 
     """
@@ -180,21 +190,18 @@ def train(args,augmentor):
     """
 
     loss_type = MSSSIML1Loss().to(device=device) # loss function 수정
-    optimizer = torch.optim.Adam(model.parameters(), args.lr)
-    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[10,15], gamma=0.5) #0804 scheduler 추가 (training 시작 후)
+    optimizer = torch.optim.RAdam(model.parameters(), args.lr)  # 0806 RAdam
+    scheduler = torch.optim.lr_scheduler.MultiStepLR(optimizer, milestones=[20], gamma=0.1) #0804 scheduler 추가 (training 시작 후)
 
     best_val_loss = 1.
     start_epoch = 0
     
-    
-   # 다음에 시도해 볼것
     gradient_accumulation = 2  # 초기 gradient_accumulation 설정 
-    
-    
-
+  
     current_epoch = [start_epoch]  # Mutable object to store current epoch
     augmentor.current_epoch_fn = lambda: current_epoch[0]
-    
+    '''
+    '''
     train_loader = create_data_loaders(data_path = args.data_path_train, args = args, shuffle=True, augmentor=augmentor)
     val_loader = create_data_loaders(data_path = args.data_path_val, args = args, augmentor=None)
     # augmentor 추가: 0727
@@ -202,7 +209,8 @@ def train(args,augmentor):
     
     val_loss_log = np.empty((0, 2))
     for epoch in range(start_epoch, args.num_epochs):
-        print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............LR: {scheduler.get_last_lr()}')
+        print(f'Epoch #{epoch:2d} ............... {args.net_name} ...............')
+        print(f'LR: {scheduler.get_last_lr()} / Gradient accumulation: {gradient_accumulation}')
         
         #0711, 0727 추가 (Data Augmentation in Training)
         #augmentor.update_epoch(epoch)  # 에포크 업데이트
@@ -240,7 +248,9 @@ def train(args,augmentor):
             )
         
         # gradient_accumulation
-        if (epoch + 1) % 4 == 0:
-            gradient_accumulation += 1
+        if (epoch + 1) % 6 == 0:
+            gradient_accumulation *= 2
+            
+        scheduler.step()
             
         

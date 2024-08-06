@@ -358,25 +358,25 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_weight_translation', 
             type=float, 
-            default=0.2, #0804 값 조정 
+            default=0.25, #0804 값 조정 
             help='Weight of translation probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
             '--aug_weight_rotation', 
             type=float, 
-            default=0.2, #0804 값 조정 
+            default=0.25, #0804 값 조정 
             help='Weight of arbitrary rotation probability. Augmentation probability will be multiplied by this constant'
         )  
         parser.add_argument(
             '--aug_weight_shearing', 
             type=float,
-            default=0.2, 
+            default=0.25, 
             help='Weight of shearing probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
             '--aug_weight_scaling', 
             type=float, 
-            default=0.2, #0804 값 조정 
+            default=0.25, #0804 값 조정 
             help='Weight of scaling probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
@@ -388,13 +388,13 @@ class DataAugmentor:
         parser.add_argument(
             '--aug_weight_fliph', 
             type=float,
-            default=0.2, #0804 값 조정 
+            default=0.25, #0804 값 조정 
             help='Weight of horizontal flip probability. Augmentation probability will be multiplied by this constant'
         )
         parser.add_argument(
             '--aug_weight_flipv',
             type=float,
-            default=0.2, #0804 값 조정 
+            default=0.25, #0804 값 조정 
             help='Weight of vertical flip probability. Augmentation probability will be multiplied by this constant'
         ) 
 

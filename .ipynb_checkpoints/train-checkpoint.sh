@@ -4,9 +4,9 @@ python train.py \
   -l 0.001 \
   -r 500 \
   -n 'test_Varnet' \
-  -t '/home/Data/train/' \
-  -v '/home/Data/val/' \
-  --cascade 40 \
+  -t '/home/Data2/train/' \
+  -v '/home/Data2/val/' \
+  --cascade 35 \
   --chans 18 \
   --sens_chans 8 \
   --aug_on \
